@@ -1,0 +1,80 @@
+name: odf
+
+services:
+  # ---------- Database ----------
+  mysql:
+    image: mysql:8.0
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root_secret
+      MYSQL_DATABASE: odf
+      MYSQL_USER: odf
+      MYSQL_PASSWORD: odf_secret
+      TZ: Asia/Phnom_Penh
+    # utf8mb4 so Khmer text is stored correctly
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    ports:
+      - "3307:3306"          # from your PC: 127.0.0.1:3307
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      # 127.0.0.1 (TCP) so it only reports healthy once MySQL has fully finished its first-time setup
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-proot_secret"]
+      interval: 5s
+      timeout: 5s
+      retries: 40
+      start_period: 20s
+
+  # ---------- phpMyAdmin  (http://localhost:8080) ----------
+  phpmyadmin:
+    image: phpmyadmin:5
+    restart: unless-stopped
+    depends_on:
+      - mysql
+    environment:
+      PMA_HOST: mysql
+      PMA_PORT: 3306
+      UPLOAD_LIMIT: 64M
+    ports:
+      - "8080:80"
+
+  # ---------- Laravel API  (http://localhost:8000) ----------
+  # PHP code is baked into the image. After changing backend code run:
+  #   docker compose up -d --build backend
+  backend:
+    build: ./backend
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_DATABASE: odf
+      DB_USERNAME: odf
+      DB_PASSWORD: odf_secret
+      APP_URL: http://localhost:8000
+      FRONTEND_URL: http://localhost:5173
+    volumes:
+      # uploaded attachments, signatures, logo and the app key live here
+      - backend_storage:/var/www/html/storage/app
+    ports:
+      - "8000:8000"
+
+  # ---------- Vue frontend  (http://localhost:5173) ----------
+  frontend:
+    build: ./frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    environment:
+      VITE_PROXY_TARGET: http://backend:8000
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    ports:
+      - "5173:5173"
+
+volumes:
+  mysql_data:
+  backend_storage:
