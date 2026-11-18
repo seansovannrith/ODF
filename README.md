@@ -60,10 +60,10 @@ You can log in with the email or the username (the part before `@`).
 |---|---|---|
 | admin@odf.local | Admin | Everything, including User management and Settings |
 | secretary@odf.local | Moderator | Registers documents, sets up the flow, sees every document and comment |
-| mao.reasey@odf.local | User | Reviewer, step 1 |
-| sam.leak@odf.local | User | Reviewer, step 2 (it's his turn in the demo document) |
-| chhom.sakborey@odf.local | User | Reviewer |
-| hun.chamroeun@odf.local | User | Reviewer (Deputy Director) |
+| reasey@odf.local | User | Reviewer, step 1 |
+| leak@odf.local | User | Reviewer, step 2 (it's his turn in the demo document) |
+| borey@odf.local | User | Reviewer |
+| chamroeun@odf.local | User | Reviewer (Deputy Director) |
 | boss@odf.local | Direction | Final approver who completes and signs |
 
 **Change these passwords before real use.**
